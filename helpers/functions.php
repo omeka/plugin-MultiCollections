@@ -35,8 +35,19 @@ function multicollections_get_collections_for_item($item = null)
 function multicollections_get_items_in_collection($num = 10)
 {
     $collection = get_current_collection();
-    $params = MultiCollectionsPlugin::defaultParams();
-    $items = get_db()->getTable('RecordRelationsRelation')->findObjectRecordsByParams($params, array('limit'=>$num));
+    $db = get_db();
+    $itemTable = $db->getTable('Item');
+    $select = $itemTable->getSelect();
+    $select->joinInner(
+        array('rr' => $db->RecordRelationsRelation),
+        'rr.subject_id = i.id',
+        array()
+    );
+    $select->where('rr.object_id = ?', $collection->id);
+    $select->where('rr.object_record_type = "Collection"');
+    $select->where('rr.property_id = ?', record_relations_property_id(DCTERMS, 'isPartOf'));
+    $select->where('rr.subject_record_type = "Item"');
+    $items = $itemTable->fetchObjects($select);
     return $items;
 }
 
@@ -118,11 +129,25 @@ function multicollections_link_to_items_in_collection($text = null, $props = arr
     }
 
     $queryParams = array();
-    $queryParams['collection'] = $collectionObj->id;
+    $queryParams['multi-collection'] = $collectionObj->id;
     
     if ($text === null) {
         $text = multicollections_total_items_in_collection($collection);
     }
 
     return link_to('items', $action, $text, $props, $queryParams);
+}
+
+function multicollections_link_to_collection($text=null, $props=array(), $action='show', $collectionObj = null)
+{
+    if (!$collectionObj) {
+        $collectionObj = get_current_collection();
+    }
+    
+    $collectionName = collection('name', array(), $collectionObj);
+    
+	$text = (!empty($text) ? $text : (!empty($collectionName) ? $collectionName : '[Untitled]'));
+	$url = uri('multi-collections/multi-collections/show/id/' . $collectionObj->id);
+	return "<a href='$url'>$collectionName</a>";
+	return link_to($collectionObj, $action, $text, $props);
 }
