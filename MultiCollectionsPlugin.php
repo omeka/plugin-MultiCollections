@@ -81,7 +81,7 @@ class MultiCollectionsPlugin
         'item_browse_sql'
         );
                             
-    protected $_filters = array('admin_items_form_tabs');
+    protected $_filters = array('admin_items_form_tabs', 'admin_navigation_main');
 
     protected $_options = null;
     
@@ -107,6 +107,12 @@ class MultiCollectionsPlugin
              
               ));
         }
+    }
+    
+    public function adminNavigationMain($tabs)
+    {
+        $tabs['Collections'] = uri('multi-collections/multi-collections/browse');
+        return $tabs;
     }
     
     public function adminItemsFormTabs($tabs, $item)
