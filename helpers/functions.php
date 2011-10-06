@@ -18,7 +18,9 @@ function multicollections_get_collections_for_item($item = null)
         'subject_id' => $item->id,
         'property_id' => record_relations_property_id(DCTERMS, 'isPartOf')
     );
-    return get_db()->getTable('RecordRelationsRelation')->findObjectRecordsByParams($params);
+
+    $collections = get_db()->getTable('RecordRelationsRelation')->findObjectRecordsByParams($params);
+    return $collections;
 }
 
 /**
@@ -84,4 +86,43 @@ function multicollections_total_items_in_collection($collection = null)
     return $result;
     
     
+}
+
+/**
+ *
+ * Corresponds to regular items function item_belongs_to_collection
+ * @see item_belongs_to_collection
+ * @param unknown_type $name
+ * @param unknown_type $item
+ */
+
+function multicollections_item_belongs_to_collection($name=null, $item=null)
+{
+     if(!$item) {
+         $item = get_current_item();
+     }
+
+     $collections = multicollections_get_collections_for_item($item);
+     foreach($collections as $collection) {
+         if ($collection->name == $name){
+             return true;
+         }
+     }
+     return false;
+}
+
+function multicollections_link_to_items_in_collection($text = null, $props = array(), $action = 'browse', $collectionObj = null)
+{
+    if (!$collectionObj) {
+        $collectionObj = get_current_collection();
+    }
+
+    $queryParams = array();
+    $queryParams['collection'] = $collectionObj->id;
+    
+    if ($text === null) {
+        $text = multicollections_total_items_in_collection($collection);
+    }
+
+    return link_to('items', $action, $text, $props, $queryParams);
 }
