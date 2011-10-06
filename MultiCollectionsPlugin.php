@@ -54,6 +54,18 @@ class MultiCollectionsPlugin extends Omeka_Plugin_Abstract
         return $tabs;
     }
     
+    public static function defaultParams()
+    {
+        return array(
+            'subject_record_type' => 'Item',
+            'object_record_type' => 'Collection',
+           // 'subject_id' => $item->id,
+          //  'object_id' => $collection->id,
+            'property_id' => record_relations_property_id(DCTERMS, 'isPartOf'),
+            'public' => true
+        );
+        
+    }
     
 }
 
@@ -65,7 +77,8 @@ class MultiCollectionsPlugin
     protected $_hooks = array(
     	'install',
     	'after_save_form_item',
-        'admin_append_to_items_show_secondary'
+        'admin_append_to_items_show_secondary',
+        'item_browse_sql'
         );
                             
     protected $_filters = array('admin_items_form_tabs');
@@ -131,6 +144,26 @@ class MultiCollectionsPlugin
             $relation = new RecordRelationsRelation();
             $relation->setProps($props);
             $relation->save();
+        }
+    }
+    
+    public function itemBrowseSql($select, $params)
+    {
+        if (($request = Zend_Controller_Front::getInstance()->getRequest())) {
+            $db = get_db();
+            $collection_id = $request->get('multi-collection');
+            if (is_numeric($collection_id)) {
+                $select->joinInner(
+                    array('rr' => $db->RecordRelationsRelation),
+                    'rr.subject_id = i.id',
+                    array()
+                );
+                $select->where('rr.object_id = ?', $collection_id);
+                $select->where('rr.object_record_type = "Collection"');
+                $select->where('rr.property_id = ?', record_relations_property_id(DCTERMS, 'isPartOf'));
+                $select->where('rr.subject_record_type = "Item"');
+                $select->group('i.id');
+            }
         }
     }
     
