@@ -311,8 +311,6 @@ class MultiCollectionsPlugin  extends Omeka_Plugin_Abstract
         return array(
             'subject_record_type' => 'Item',
             'object_record_type' => 'Collection',
-           // 'subject_id' => $item->id,
-          //  'object_id' => $collection->id,
             'property_id' => record_relations_property_id(DCTERMS, 'isPartOf'),
             'public' => true
         );
