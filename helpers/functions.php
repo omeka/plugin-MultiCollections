@@ -63,14 +63,14 @@ function multicollections_loop_items_in_collection($num = 10)
     // Cache this so we don't end up calling the DB query over and over again
     // inside the loop.
     static $loopIsRun = false;
-    
+
     if (!$loopIsRun) {
         // Retrieve a limited # of items based on the collection given.
         $items = multicollections_get_items_in_collection($num);
         set_items_for_loop($items);
         $loopIsRun = true;
     }
-    
+
     $item = loop_items();
     if (!$item) {
         $loopIsRun = false;
@@ -95,8 +95,8 @@ function multicollections_total_items_in_collection($collection = null)
     $params['object_id'] = $collection->id;
     $result = get_db()->getTable('RecordRelationsRelation')->findSubjectRecordsByParams($params, array('count'=> true));
     return $result;
-    
-    
+
+
 }
 
 /**
@@ -130,9 +130,9 @@ function multicollections_link_to_items_in_collection($text = null, $props = arr
 
     $queryParams = array();
     $queryParams['multi-collection'] = $collectionObj->id;
-    
+
     if ($text === null) {
-        $text = multicollections_total_items_in_collection($collection);
+        $text = multicollections_total_items_in_collection($collectionObj);
     }
 
     return link_to('items', $action, $text, $props, $queryParams);
@@ -143,9 +143,9 @@ function multicollections_link_to_collection($text=null, $props=array(), $action
     if (!$collectionObj) {
         $collectionObj = get_current_collection();
     }
-    
+
     $collectionName = collection('name', array(), $collectionObj);
-    
+
 	$text = (!empty($text) ? $text : (!empty($collectionName) ? $collectionName : '[Untitled]'));
 	$url = uri('multi-collections/multi-collections/show/id/' . $collectionObj->id);
 	return "<a href='$url'>$collectionName</a>";
