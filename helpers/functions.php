@@ -2,7 +2,7 @@
 
 /**
  *
- * Corresponds to regular collections function get_collections_for_item()
+ * Corresponds to regular collections function get_collection_for_item()
  * @see get_collections_for_item()
  * @param Item $item
  */
@@ -91,7 +91,6 @@ function multicollections_total_items_in_collection($collection = null)
         $collection = get_current_collection();
     }
     $params = MultiCollectionsPlugin::defaultParams();
-   // unset($params['subject_id']);
     $params['object_id'] = $collection->id;
     $result = get_db()->getTable('RecordRelationsRelation')->findSubjectRecordsByParams($params, array('count'=> true));
     return $result;
@@ -107,20 +106,30 @@ function multicollections_total_items_in_collection($collection = null)
  * @param unknown_type $item
  */
 
-function multicollections_item_belongs_to_collection($name=null, $item=null)
+function multicollections_item_belongs_to_collection($collectionName=null, $item=null)
 {
      if(!$item) {
          $item = get_current_item();
      }
 
      $collections = multicollections_get_collections_for_item($item);
-     foreach($collections as $collection) {
-         if ($collection->name == $name){
-             return true;
-         }
+     if($collectionName) {
+	     foreach($collections as $collection) {
+	         if ( ($collection->name == $collectionName)
+	        	 && ($collection->public || has_permission('Collections', 'showNotPublic')) )  {
+	             return true;
+	         }
+	     }
+     } else {
+         return ! empty($collections);
      }
+
      return false;
 }
+
+/**
+ * Corresponds to link_to_items_in_collection
+ */
 
 function multicollections_link_to_items_in_collection($text = null, $props = array(), $action = 'browse', $collectionObj = null)
 {
@@ -138,16 +147,11 @@ function multicollections_link_to_items_in_collection($text = null, $props = arr
     return link_to('items', $action, $text, $props, $queryParams);
 }
 
-function multicollections_link_to_collection($text=null, $props=array(), $action='show', $collectionObj = null)
+function multicollections_loop_collections_for_item($item = null)
 {
-    if (!$collectionObj) {
-        $collectionObj = get_current_collection();
-    }
-
-    $collectionName = collection('name', array(), $collectionObj);
-
-	$text = (!empty($text) ? $text : (!empty($collectionName) ? $collectionName : '[Untitled]'));
-	$url = uri('multi-collections/multi-collections/show/id/' . $collectionObj->id);
-	return "<a href='$url'>$collectionName</a>";
-	return link_to($collectionObj, $action, $text, $props);
+	if(!$item) {
+	    $item = get_current_item();
+	}
+	$collections = multicollections_get_collections_for_item($item);
+	return loop_records('collections', $collections, 'set_current_collection');
 }

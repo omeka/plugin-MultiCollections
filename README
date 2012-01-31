@@ -1,0 +1,36 @@
+== ABOUT ==
+
+Multicollections supercedes Omeka's regular collection handling to allow items to be in more than one collection.
+
+== REQUIREMENTS ==
+
+The RecordRelations plugin must be installed and activated
+
+== USAGE ==
+
+Because MultiCollections tries to supercede Omeka's regular collection system, themes will not display the collection
+information from MultiCollections. However, helper functions that correspond to the relevant theming functions are
+provided. The following correspond to existing Omeka functions of similar name when you remove the multicollections_ 
+prefix.
+
+* multicollections_get_collections_for_item
+* multicollections_get_items_in_collection
+* multicollections_loop_items_in_collection
+* multicollections_total_items_in_collection
+* multicollections_item_belongs_to_collection
+* multicollections_link_to_items_in_collection
+
+
+To loop through the collections for an item and display a link, for example on the item show page, something
+like this will work, using the multicollections_loop_collections_for_item function
+
+```php
+    <?php if (multicollections_item_belongs_to_collection()): ?>
+    <div id="collection" class="element">
+        <h3><?php echo __('Collections'); ?></h3>
+        <?php while(multicollections_loop_collections_for_item()): ?>
+        <div class="element-text"><p><?php echo link_to_collection(); ?></p></div>
+        <?php endwhile; ?>
+    </div>
+    <?php endif; ?>
+```
