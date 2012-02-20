@@ -27,11 +27,11 @@
             <tbody>
                 <?php $key = 0;?>
         <?php while (loop_collections()): ?>
-        
+
             <tr class="collection<?php if(++$key%2==1) echo ' odd'; else echo ' even'; ?>">
                 <td scope="row"><?php echo collection('id');?>
                 </td>
-                <td class="title"><?php echo multicollections_link_to_collection(); ?></td>
+                <td class="title"><?php echo link_to_collection(); ?></td>
                 <td>
                 <?php if (collection_has_collectors()): ?>
                     <ul>
@@ -42,22 +42,22 @@
                         <li>No collectors</li>
                     </ul>
                 <?php endif; ?>
-                
+
                 </td>
                 <td><?php if($time = collection('Date Added')):?>
                     <?php echo date('m.d.Y', strtotime($time)); ?>
                 <?php endif; ?>
                 </td>
                 <td><?php echo multicollections_link_to_items_in_collection(); ?></td>
-                
+
                 <?php if (has_permission('Collections', 'edit')): ?>
                 <td>
                     <?php echo link_to_collection('Edit', array('class'=>'edit'), 'edit'); ?>
                 </td>
                 <?php endif; ?>
             </tr>
-        
-            
+
+
 
         <?php endwhile; ?>
         </tbody>
@@ -67,9 +67,9 @@
       <?php endif; ?>
     <?php else: ?>
         <p>There are no collections in your archive. <?php if (has_permission('Collections', 'add')): ?>Why don't you <?php echo link_to('collections', 'add', 'add one'); ?>?<?php endif; ?></p>
-        
+
     <?php endif; ?>
-    
+
     <?php fire_plugin_hook('admin_append_to_collections_browse_primary', $collections); ?>
 </div>
 <?php foot(); ?>
