@@ -4,8 +4,8 @@ class MultiCollectionsPlugin extends Omeka_Plugin_Abstract
 {
 
     protected $_hooks = array(
-    	'install',
-    	'after_save_form_item',
+        'install',
+        'after_save_form_item',
         'admin_append_to_items_show_secondary',
         'item_browse_sql',
         'config_form',
@@ -77,7 +77,10 @@ class MultiCollectionsPlugin extends Omeka_Plugin_Abstract
         $collection = get_collection_for_item($item);
         $relationTable = $db->getTable('RecordRelationsRelation');
         $params = self::defaultParams();
-        $params['subject_id'] = $item->id;
+        if(isset($item->id) && $item->id != null) {
+            $params['subject_id'] = $item->id;
+        }
+
         $multicollections = $relationTable->findObjectRecordsByParams($params, array('indexById'=>true));
         //if already in a collection the usual way add the record relation for it immediately for display
         if($collection) {
