@@ -107,6 +107,15 @@ class MultiCollectionsPlugin extends Omeka_Plugin_Abstract
         $relationTable = get_db()->getTable('RecordRelationsRelation');
         $props = self::defaultParams();
         $props['subject_id'] = $item->id;
+
+        $relations = $relationTable->findBy($props);
+
+        foreach($relations as $rel) {
+            if(!in_array($rel->object_id, $post['multicollections_collections'])) {
+                $rel->delete();
+            }
+        }
+
         foreach($post['multicollections_collections'] as $collection_id) {
             $props['object_id'] = $collection_id;
             if($relationTable->count($props) == 0) {
