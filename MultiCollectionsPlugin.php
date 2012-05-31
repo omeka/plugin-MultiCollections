@@ -74,7 +74,6 @@ class MultiCollectionsPlugin extends Omeka_Plugin_Abstract
     public function filterAdminItemsFormTabs($tabs, $item)
     {
         $db = get_db();
-        $collection = get_collection_for_item($item);
         $relationTable = $db->getTable('RecordRelationsRelation');
         $params = self::defaultParams();
         if(isset($item->id) && $item->id != null) {
@@ -82,17 +81,7 @@ class MultiCollectionsPlugin extends Omeka_Plugin_Abstract
         }
 
         $multicollections = $relationTable->findObjectRecordsByParams($params, array('indexById'=>true));
-        //if already in a collection the usual way add the record relation for it immediately for display
-        if($collection) {
-            if(! isset($multicollections[$collection->id]) ) {
-                $params['object_id'] = $collection->id;
-                $params['public'] = true;
-                $newMcRelation = new RecordRelationsRelation();
-                $newMcRelation->setProps($params);
-                $newMcRelation->save();
-                $multicollections[$collection->id] = $newMcRelation;
-            }
-        }
+
         $allCollections = $db->getTable('Collection')->findPairsForSelectForm();
         $html = "<h3>Check the Collections for the Item</h3>";
         $html .= __v()->formMultiCheckbox('multicollections_collections', array_keys($multicollections), null, $allCollections , '');
@@ -107,13 +96,10 @@ class MultiCollectionsPlugin extends Omeka_Plugin_Abstract
         $relationTable = get_db()->getTable('RecordRelationsRelation');
         $props = self::defaultParams();
         $props['subject_id'] = $item->id;
+        $currCollections = $relationTable->findBy($props);
 
-        $relations = $relationTable->findBy($props);
-
-        foreach($relations as $rel) {
-            if(!in_array($rel->object_id, $post['multicollections_collections'])) {
-                $rel->delete();
-            }
+        foreach($currCollections as $collection) {
+            $collection->delete();
         }
 
         foreach($post['multicollections_collections'] as $collection_id) {
@@ -131,17 +117,20 @@ class MultiCollectionsPlugin extends Omeka_Plugin_Abstract
         if (($request = Zend_Controller_Front::getInstance()->getRequest())) {
             $db = get_db();
             $collection_id = $request->get('multi-collection');
+            $itemTable = $db->getTable('Item');
+            $itemAlias = $itemTable->getTableAlias();
+
             if (is_numeric($collection_id)) {
                 $select->joinInner(
-                    array('rr' => $db->RecordRelationsRelation),
-                    'rr.subject_id = i.id',
+                    array('record_relations_relations' => $db->RecordRelationsRelation),
+                    "record_relations_relations.subject_id = $itemAlias.id",
                     array()
                 );
-                $select->where('rr.object_id = ?', $collection_id);
-                $select->where('rr.object_record_type = "Collection"');
-                $select->where('rr.property_id = ?', record_relations_property_id(DCTERMS, 'isPartOf'));
-                $select->where('rr.subject_record_type = "Item"');
-                $select->group('i.id');
+                $select->where('record_relations_relations.object_id = ?', $collection_id);
+                $select->where('record_relations_relations.object_record_type = "Collection"');
+                $select->where('record_relations_relations.property_id = ?', record_relations_property_id(DCTERMS, 'isPartOf'));
+                $select->where('record_relations_relations.subject_record_type = "Item"');
+                $select->group("$itemAlias.id");
             }
         }
     }
