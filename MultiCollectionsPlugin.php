@@ -90,7 +90,7 @@ class MultiCollectionsPlugin extends Omeka_Plugin_Abstract
 
         $allCollections = $db->getTable('Collection')->findPairsForSelectForm();
         $html = "<h3>Check the Collections for the Item</h3>";
-        $html .= __v()->formMultiCheckbox('multicollections_collections', array_keys($multicollections), null, $allCollections , '');
+        $html .= __v()->formMultiCheckbox('multicollections_collections', $values, null, $allCollections , '');
         $label = get_option('multicollections_override') ? 'Collection' : 'Multi-Collections';
         $tabs['Collections'] = $html;
         unset($tabs['Collection']);
