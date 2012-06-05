@@ -32,12 +32,18 @@ function multicollections_get_collections_for_item($item = null)
  * @param $num
  */
 
-function multicollections_get_items_in_collection($num = 10)
+function multicollections_get_items_in_collection($num = 10, $item_type = null)
 {
     $collection = get_current_collection();
     $db = get_db();
     $itemTable = $db->getTable('Item');
     $select = $itemTable->getSelect();
+    $select->limit($num);
+    if($item_type) {
+        $type = $db->getTable('ItemType')->findByName($item_type);
+        $select->where("item_type_id = ? ", $type->id);
+    }
+    
     $select->joinInner(
         array('rr' => $db->RecordRelationsRelation),
         'rr.subject_id = i.id',
