@@ -79,8 +79,14 @@ class MultiCollectionsPlugin extends Omeka_Plugin_Abstract
         if(isset($item->id) && $item->id != null) {
             $params['subject_id'] = $item->id;
         }
-
-        $multicollections = $relationTable->findObjectRecordsByParams($params, array('indexById'=>true));
+        
+        if($item->exists()) {
+            $multicollections = $relationTable->findObjectRecordsByParams($params, array('indexById'=>true));
+            $values = array_keys($multicollections);
+        } else {
+            $values = array();
+        }
+        
 
         $allCollections = $db->getTable('Collection')->findPairsForSelectForm();
         $html = "<h3>Check the Collections for the Item</h3>";
