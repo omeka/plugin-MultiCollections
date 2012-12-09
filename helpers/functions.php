@@ -98,10 +98,9 @@ function multicollections_total_items_in_collection($collection = null)
     }
     $params = MultiCollectionsPlugin::defaultParams();
     $params['object_id'] = $collection->id;
-    $result = get_db()->getTable('RecordRelationsRelation')->findSubjectRecordsByParams($params, array('count'=> true));
+    //$result = get_db()->getTable('RecordRelationsRelation')->findSubjectRecordsByParams($params, array('count'=> true));
+    $result = get_db()->getTable('RecordRelationsRelation')->countSubjectRecordsByParams($params);
     return $result;
-
-
 }
 
 /**
@@ -140,7 +139,7 @@ function multicollections_item_belongs_to_collection($collectionName=null, $item
 function multicollections_link_to_items_in_collection($text = null, $props = array(), $action = 'browse', $collectionObj = null)
 {
     if (!$collectionObj) {
-        $collectionObj = get_current_collection();
+        $collectionObj = get_current_record('collection');
     }
 
     $queryParams = array();

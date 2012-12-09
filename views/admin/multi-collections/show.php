@@ -1,45 +1,62 @@
 <?php
-    $collectionTitle = strip_formatting(collection('Name'));
-    if ($collectionTitle != '') {
+    $collectionTitle = strip_formatting(metadata('collection', array('Dublin Core', 'Title')));
+    if ($collectionTitle != '' && $collectionTitle != __('[Untitled]')) {
         $collectionTitle = ': &quot;' . $collectionTitle . '&quot; ';
     } else {
         $collectionTitle = '';
     }
-    $collectionTitle = 'Collection #' . collection('id') . $collectionTitle;
+    $collectionTitle = __('Collection #%s', metadata('collection', 'id')) . $collectionTitle;
 ?>
-<?php head(array('title'=> $collectionTitle, 'bodyclass'=>'collections show')); ?>
-<h1><?php echo $collectionTitle; ?> <span class="view-public-page">[ <a href="<?php echo html_escape(public_uri('collections/show/'.collection('id'))); ?>">View Public Page</a> ]</span> </h1>
-<?php if (has_permission('Collections', 'edit')): ?>
-<p id="edit-collection" class="edit-button"><?php echo link_to_collection('Edit this Collection', array('class'=>'edit'), 'edit'); ?></p>
-<?php endif; ?>
+<?php echo head(array('title'=> $collectionTitle, 'bodyclass'=>'collections show')); ?>
 
-<div id="primary">
-<?php echo flash(); ?>
-<div id="collection-info">
-<h2>Description</h2>
-<p><?php echo collection('Description'); ?></p>
+<section class="seven columns alpha">
+    <?php echo flash(); ?>
 
-    <h2>Collectors</h2>
-    <ul id="collector-list">
-        <?php if (collection_has_collectors()): ?>
-        <li><?php echo collection('Collectors', array('delimiter'=>'</li><li>')); ?></li>
-        <?php else: ?>
-        <li>No collectors.</li>
+    <?php echo all_element_texts('collection'); ?>
+
+    <?php if(metadata('collection', 'Total Items') > 0): ?>
+    <h2><?php echo __('Recently Added Items'); ?></h2>
+    <ul class="recent-items">
+    <?php foreach (loop('items') as $item): ?>
+        <li><span class="date"><?php echo format_date(metadata('item', 'Added')); ?></span><span class="title"> <?php echo link_to_item(); ?></span></li>
+    <?php endforeach;?>
+    </ul>
+    <?php endif; ?>
+
+    <?php fire_plugin_hook('admin_collections_show', array('collection' => $collection, 'view' => $this)); ?>
+</section>
+
+<section class="three columns omega">
+    <div id="edit" class="panel">
+        <?php if (is_allowed(get_current_record('collection'), 'edit')): ?>    
+            <?php echo link_to_collection(__('Edit'), array('class'=>'big green button'), 'edit'); ?>
         <?php endif; ?>
-    </ul>
+        <a href="<?php echo html_escape(public_url('collections/show/'.metadata('collection', 'id'))); ?>" class="big blue button" target="_blank"><?php echo __('View Public Page'); ?></a>
+        <?php if (is_allowed(get_current_record('collection'), 'delete')): ?>    
+            <?php echo link_to_collection(__('Delete'), array('class'=>'big red button'), 'delete-confirm'); ?>
+        <?php endif; ?>
+    </div>       
+    
+    <div class="public-featured panel">
+        <p><span class="label"><?php echo __('Public'); ?>:</span> <?php echo ($collection->public) ? __('Yes') : __('No'); ?></p>
+        <p><span class="label"><?php echo __('Featured'); ?>:</span> <?php echo ($collection->featured) ? __('Yes') : __('No'); ?></p>
+    </div>
 
-</div>
-<div id="collection-items">
-    <h2>Recently Added Items</h2>
-    <ul>
-    <?php while (multicollections_loop_items_in_collection(10)): ?>
-        <li><span class="date"><?php echo date('m.d.Y', strtotime(item('Date Added'))); ?></span><span class="title"> <?php echo link_to_item(); ?></span></li>
-    <?php endwhile;?>
-    </ul>
-    <h2>Total Number of Items</h2>
-    <p><?php echo multicollections_link_to_items_in_collection(); ?></p>
-</div>
+    <div class="total-items panel">
+        <h4><?php echo __('Total Number of Items'); ?></h4>
+        <p><?php echo multicollections_link_to_items_in_collection(); ?></p>
+    </div>
 
-<?php fire_plugin_hook('admin_append_to_collections_show_primary', $collection); ?>
-</div>
+    <div class="contributors panel">
+        <h4><?php echo __('Contributors'); ?></h4>
+        <ul id="contributor-list">
+            <?php if ($collection->hasContributor()): ?> 
+            <li><?php echo metadata('collection', array('Dublin Core', 'Contributor'), array('all'=>true, 'delimiter'=>'</li><li>')); ?></li>
+            <?php else: ?>
+            <li><?php echo __('No contributors.'); ?></li>
+            <?php endif; ?> 
+        </ul>
+    </div>
+</section>
+
 <?php foot(); ?>

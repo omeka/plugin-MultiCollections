@@ -1,18 +1,19 @@
 <?php
 
-class MultiCollectionsPlugin extends Omeka_Plugin_Abstract
+class MultiCollectionsPlugin extends Omeka_Plugin_AbstractPlugin
 {
 
     protected $_hooks = array(
         'install',
         'after_save_form_item',
-        'admin_append_to_items_show_secondary',
-        'item_browse_sql',
+        'admin_items_show_sidebar',
+        'admin_items_panel_fields',
+        'items_browse_sql',
         'config_form',
         'config'
         );
-
-    protected $_filters = array('admin_items_form_tabs', 'admin_navigation_main');
+//TODO:check for override in setUp
+    protected $_filters = array('admin_navigation_main');
 
     protected $_options = null;
 
@@ -64,15 +65,24 @@ class MultiCollectionsPlugin extends Omeka_Plugin_Abstract
         include 'config_form.php';
     }
 
-    public function filterAdminNavigationMain($tabs)
+    public function filterAdminNavigationMain($nav)
     {
+        $nav[] = array(
+                    'label' => get_option('multicollections_override') ? 'Collections' : 'Multi-Collections',
+                    'uri' => url('multi-collections/multi-collections/browse')
+                 );
+        /*
         $label = get_option('multicollections_override') ? 'Collections' : 'Multi-Collections';
-        $tabs[$label] = uri('multi-collections/multi-collections/browse');
-        return $tabs;
+        $tabs[$label] = url('multi-collections/multi-collections/browse');
+        */
+        
+        return $nav;
     }
 
-    public function filterAdminItemsFormTabs($tabs, $item)
+    public function hookAdminItemsPanelFields($args)
     {
+        $view = $args['view'];
+        $item = $args['record'];
         $db = get_db();
         $relationTable = $db->getTable('RecordRelationsRelation');
         $params = self::defaultParams();
@@ -87,18 +97,23 @@ class MultiCollectionsPlugin extends Omeka_Plugin_Abstract
             $values = array();
         }
         
-
         $allCollections = $db->getTable('Collection')->findPairsForSelectForm();
-        $html = "<h3>Check the Collections for the Item</h3>";
-        $html .= __v()->formMultiCheckbox('multicollections_collections', $values, null, $allCollections , '');
-        $label = get_option('multicollections_override') ? 'Collection' : 'Multi-Collections';
-        $tabs['Collections'] = $html;
-        unset($tabs['Collection']);
-        return $tabs;
+        $html = "<style type='text/css'>div#collection-form {display: none;} \n ";
+        $html .= "div#multicollections-form div.inputs label {display:block; line-height: 1em; } ";
+        $html .= "</style>";        
+        $html .= '<div id="multicollections-form" class="field">';
+        $label = get_option('multicollections_override') ? 'Collections' : 'Multi-Collections';
+        $html .= $view->formLabel('collection-id', $label);
+        $html .= '    <div class="inputs">';
+        $html .= $view->formMultiCheckbox('multicollections_collections', $values, null, $allCollections , '');
+        $html .= "</div></div>";
+
+        echo $html;
     }
 
-    public function hookAfterSaveFormItem($item, $post)
+    public function hookAfterSaveFormItem($item, $args)    
     {
+        $post = $args['post'];
         $relationTable = get_db()->getTable('RecordRelationsRelation');
         $props = self::defaultParams();
         $props['subject_id'] = $item->id;
@@ -118,14 +133,16 @@ class MultiCollectionsPlugin extends Omeka_Plugin_Abstract
         }
     }
 
-    public function hookItemBrowseSql($select, $params)
+    public function hookItemsBrowseSql($args)
     {
+        debug('hook');
+        $select = $args['select'];
+        $params = $args['params'];
         if (($request = Zend_Controller_Front::getInstance()->getRequest())) {
             $db = get_db();
             $collection_id = $request->get('multi-collection');
             $itemTable = $db->getTable('Item');
             $itemAlias = $itemTable->getTableAlias();
-
             if (is_numeric($collection_id)) {
                 $select->joinInner(
                     array('record_relations_relations' => $db->RecordRelationsRelation),
@@ -134,15 +151,16 @@ class MultiCollectionsPlugin extends Omeka_Plugin_Abstract
                 );
                 $select->where('record_relations_relations.object_id = ?', $collection_id);
                 $select->where('record_relations_relations.object_record_type = "Collection"');
-                $select->where('record_relations_relations.property_id = ?', record_relations_property_id(DCTERMS, 'isPartOf'));
+                $select->where('record_relations_relations.property_id = ?', get_record_relations_property_id(DCTERMS, 'isPartOf'));
                 $select->where('record_relations_relations.subject_record_type = "Item"');
                 $select->group("$itemAlias.id");
             }
         }
     }
 
-    public function hookAdminAppendToItemsShowSecondary($item)
+    public function hookAdminItemsShowSidebar($args)
     {
+        $item = $args['item'];
         $html = '<div class="info-panel">';
         $html .= "<h2>Multiple Collections</h2>";
         $html .= "<div>";
@@ -164,7 +182,7 @@ class MultiCollectionsPlugin extends Omeka_Plugin_Abstract
         return array(
             'subject_record_type' => 'Item',
             'object_record_type' => 'Collection',
-            'property_id' => record_relations_property_id(DCTERMS, 'isPartOf'),
+            'property_id' => get_record_relations_property_id(DCTERMS, 'isPartOf'),
             'public' => true
         );
 
