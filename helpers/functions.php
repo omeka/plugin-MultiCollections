@@ -132,6 +132,12 @@ function multicollections_item_belongs_to_collection($collectionName=null, $item
      return false;
 }
 
+function multicollections_link_to_collection($text = null, $props = array(), $action = 'show', $collectionObj = null)
+{
+    
+    
+}
+
 /**
  * Corresponds to link_to_items_in_collection
  */

@@ -17,6 +17,13 @@ class MultiCollectionsPlugin extends Omeka_Plugin_AbstractPlugin
 
     protected $_options = null;
 
+    public function setUp()
+    {
+        parent::setUp();
+        Zend_Controller_Front::getInstance()->registerPlugin(new MultiCollections_ControllerPlugin);        
+        
+    }
+    
     public function hookInstall()
     {
         //check props I need
@@ -135,7 +142,6 @@ class MultiCollectionsPlugin extends Omeka_Plugin_AbstractPlugin
 
     public function hookItemsBrowseSql($args)
     {
-        debug('hook');
         $select = $args['select'];
         $params = $args['params'];
         if (($request = Zend_Controller_Front::getInstance()->getRequest())) {
