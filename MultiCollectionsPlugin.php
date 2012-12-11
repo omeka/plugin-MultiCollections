@@ -13,7 +13,10 @@ class MultiCollectionsPlugin extends Omeka_Plugin_AbstractPlugin
         'config'
         );
 //TODO:check for override in setUp
-    protected $_filters = array('admin_navigation_main');
+    protected $_filters = array(
+            'admin_navigation_main',
+            'item_search_filters'
+            );
 
     protected $_options = null;
 
@@ -72,6 +75,18 @@ class MultiCollectionsPlugin extends Omeka_Plugin_AbstractPlugin
         include 'config_form.php';
     }
 
+    public function filterItemSearchFilters($displayArray, $args)
+    {        
+        $request_array = $args['request_array'];
+        if(isset($request_array['multi-collection'])) {
+            $db = get_db();
+            $collection = $db->getTable('Collection')->find($request_array['multi-collection']);
+            $displayValue = strip_formatting(metadata($collection, array('Dublin Core', 'Title')));            
+            $displayArray['collection'] = $displayValue;
+        }        
+        return $displayArray;
+    }
+    
     public function filterAdminNavigationMain($nav)
     {
         $nav[] = array(
