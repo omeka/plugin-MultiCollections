@@ -1,18 +1,27 @@
-== ABOUT ==
+Multi Collections (plugin for Omeka)
+====================================
 
-Multicollections supercedes Omeka's regular collection handling to allow items to be in more than one collection.
+About
+-----
 
-== REQUIREMENTS ==
+[Multicollections] supercedes [Omeka]'s regular collection handling to allow items
+to be in more than one collection.
 
-The RecordRelations plugin must be installed and activated
 
-== USAGE ==
+Requirements
+------------
 
-Because MultiCollections tries to supercede Omeka's regular collection system, themes will not display the collection
-information from MultiCollections. However, helper functions that correspond to the relevant theming functions are
-provided. The following correspond to existing Omeka functions of similar name when you remove the multicollections_ 
-prefix.
+The RecordRelations plugin must be installed and activated.
 
+
+Usage
+-----
+
+Because MultiCollections tries to supercede Omeka's regular collection system,
+themes will not display the collection information from MultiCollections.
+However, helper functions that correspond to the relevant theming functions are
+provided. The following corresponds to existing Omeka 1.5 functions of similar
+name when you remove the multicollections_ prefix:
 * multicollections_get_collections_for_item
 * multicollections_get_items_in_collection
 * multicollections_loop_items_in_collection
@@ -20,9 +29,11 @@ prefix.
 * multicollections_item_belongs_to_collection
 * multicollections_link_to_items_in_collection
 
+Currently, these names are kept in the release for Omeka 2.0.
 
-To loop through the collections for an item and display a link, for example on the item show page, something
-like this will work, using the multicollections_loop_collections_for_item function
+To loop through the collections for an item and display a link, for example on
+the item show page, something like this will work, using the `multicollections_loop_collections_for_item()`
+function:
 
 ```php
     <?php if (multicollections_item_belongs_to_collection()): ?>
@@ -34,3 +45,60 @@ like this will work, using the multicollections_loop_collections_for_item functi
     </div>
     <?php endif; ?>
 ```
+
+
+Warning
+-------
+
+Use it at your own risk.
+
+It's always recommended to backup your files and database regularly so you can
+roll back if needed.
+
+
+Troubleshooting
+---------------
+
+See online issues on the [MultiCollections issues] page on GitHub.
+
+
+License
+-------
+
+This plugin is published under [GNU/GPL].
+
+This program is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation; either version 3 of the License, or (at your option) any later
+version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+details.
+
+You should have received a copy of the GNU General Public License along with
+this program; if not, write to the Free Software Foundation, Inc.,
+51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+
+Contact
+-------
+
+Current maintainers:
+* [Center for History & New Media]
+
+
+Copyright
+---------
+
+* Copyright Center for History and New Media, 2011-2012
+* Copyright Daniel Berthereau, 2014 (see [Daniel-KM])
+
+
+[Omeka]: https://omeka.org
+[Multicollections]: https://github.com/omeka/plugin-MultiCollections
+[Multicollections issues]: http://omeka.org/forums/forum/plugins
+[GNU/GPL]: https://www.gnu.org/licenses/gpl-3.0.html "GNU/GPL v3"
+[Center for History & New Media]: http://chnm.gmu.edu
+[Daniel-KM]: https://github.com/Daniel-KM "Daniel Berthereau"
